@@ -24,5 +24,3 @@ class BackgroundTask(threading.Thread):
     def run(self):
         self.feedback = self.task(*self.args) # initiate the function and return data
         self.alive = False # kill thread and waiting loop
-
-
