@@ -19,6 +19,7 @@ class MainPage(tk.Frame):
         # settings
         self.current_hovered_widget = "" # store the previous colour of the element being hovered over
         self.search_results = [] # store the search results (to be displayed)
+        self.search_result_widgets = [] # so that the search results can be updated
 
         #styling
         self.style = ttk.Style()
@@ -51,6 +52,7 @@ class MainPage(tk.Frame):
         # playlist canvas, for the scrollbar areas (the canvas is its own frame)
         self.playlist_canvas = tk.Canvas(self, width=self.controller.default_width//5, height=self.controller.default_height, bg=self.controller.playlist_bg_colour, highlightthickness=0, borderwidth=0)
         self.playlist_canvas.place(x=18, y=0) # pushed 18px to the right for scrollbar
+        
 
         # playlist area
         self.playlist_area = tk.Frame(self.playlist_canvas)
@@ -88,6 +90,7 @@ class MainPage(tk.Frame):
         # main area
         self.main_area = tk.Frame(self.main_canvas)
         self.main_area.bind('<Configure>', self.resize_main_canvas_scroll) # resize the canvas scrollregion each time the size of the frame changes
+        
         self.main_canvas.create_window(18+self.controller.default_width//5, 0, window=self.main_area) # display frame inside the canvas
         
         # scrollbars
@@ -123,14 +126,25 @@ class MainPage(tk.Frame):
                 self.controller.update()
                 time.sleep(0.01) # let CPU rest
 
-            print(task.feedback)
+            self.search_results = task.feedback
 
-            
-            
+            # display results
+            for result in self.search_result_widgets: # remove previous results
+                result.destroy()
 
-            
-            
-    def calc_centre(self, canvas):
+            i = 0
+            for result in self.search_results: # draw new widgets
+                song = tk.Label(self.main_canvas, text=self.remove_emoji(result), font=self.controller.normal_font, fg="white", bg=self.controller.bg_colour)
+                self.search_result_widgets.append(song)
+                self.main_canvas.create_window(self.calc_centre(self.main_canvas), 200+(i*50), window=song)
+                i+=1
+
+            self.resize_main_canvas_scroll(None) # pass event as None, update the canvas scrolling function
+
+    def remove_emoji(self, string):
+        return string.encode('ascii', 'ignore').decode('ascii')
+
+    def calc_centre(self, canvas): # for positioning widgets in the middle of canvas
         canvas.update()
         offset = canvas.winfo_width()//2 # get the midpoint of the screen
 

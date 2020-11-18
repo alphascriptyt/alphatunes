@@ -2,7 +2,7 @@ import youtube_dl
 import threading
 
 # player functions
-def search(title, amount=5): # search for results, works
+def search(title, amount=25): # search for results, works
     info = youtube_dl.YoutubeDL({"quiet" : True}).extract_info(f"ytsearch{amount}:{title}", download=False, ie_key="YoutubeSearch")
 
     data = {}
