@@ -91,7 +91,7 @@ class MainPage(tk.Frame):
         
 
         # main canvas
-        self.main_canvas = tk.Canvas(self, width=self.controller.default_width-(self.controller.default_width//5)-36, height=self.controller.default_height, bg=self.controller.bg_colour, highlightthickness=0, borderwidth=0) # take away 36 for the scrollbars
+        self.main_canvas = tk.Canvas(self, width=self.controller.default_width-(self.controller.default_width//5)-34, height=self.controller.default_height, bg=self.controller.bg_colour, highlightthickness=0, borderwidth=0) # take away 34 for the scrollbars
         self.main_canvas.place(x=17+self.controller.default_width//5, y=0) # pushed 17 to the right for scrollbar
 
         # main area
