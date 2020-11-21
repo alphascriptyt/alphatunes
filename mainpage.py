@@ -47,13 +47,12 @@ class MainPage(tk.Frame):
                 troughcolor=self.controller.bg_colour, bordercolor=self.controller.bg_colour, arrowcolor=self.controller.bg_colour)
 
         self.style.map("Vertical.TScrollbar", background=[("active", self.controller.sb_selected_colour)])
-
+    
         # playlist section
         # playlist canvas, for the scrollbar areas (the canvas is its own frame)
-        self.playlist_canvas = tk.Canvas(self, width=self.controller.default_width//5, height=self.controller.default_height, bg=self.controller.playlist_bg_colour, highlightthickness=0, borderwidth=0)
-        self.playlist_canvas.place(x=18, y=0) # pushed 18px to the right for scrollbar
+        self.playlist_canvas = tk.Canvas(self, width=self.controller.default_width//5, height=(self.controller.default_height//12)*11, bg=self.controller.playlist_bg_colour, highlightthickness=0, borderwidth=0)
+        self.playlist_canvas.place(x=17, y=0) # pushed 17px to the right for scrollbar, 18 has a weird white dot
         
-
         # playlist area
         self.playlist_area = tk.Frame(self.playlist_canvas)
         self.playlist_area.bind('<Configure>', self.resize_playlist_canvas_scroll) # resize the canvas scrollregion each time the size of the frame changes
@@ -61,23 +60,31 @@ class MainPage(tk.Frame):
         
         # scrollbars
         self.playlist_scrollbar = ttk.Scrollbar(self, command=self.playlist_canvas.yview, orient="vertical", style="custom.Vertical.TScrollbar")
-        self.playlist_scrollbar.place(x=0, y=0, relheight=1, anchor='nw') # set the scrollbar to the left of the screen
+        self.playlist_scrollbar.place(x=0, y=0, height=(self.controller.default_height//12)*11) # set the scrollbar to the left of the screen
         self.playlist_canvas.configure(yscrollcommand=self.playlist_scrollbar.set) 
         
         # widgets
-        playlist_title = tk.Label(self.playlist_area, text="Playlists:", fg="red", bg=self.controller.playlist_bg_colour)
-        playlist_title.pack()
+        playlist_title = tk.Label(self.playlist_canvas, text="PLAYLISTS", font=self.controller.normal_font, fg="white", bg=self.controller.playlist_bg_colour)
+        self.playlist_canvas.create_window(self.controller.default_width//10-9, 10, window=playlist_title) # -9 for the scrollbar
         
         for i in range(100):
-            label = tk.Label(self.playlist_canvas, text="test" + str(i), font=self.controller.normal_font, cursor="hand2", fg="red", bg=self.controller.playlist_bg_colour) # binding the widget to the canvas improves performance
-            label.bind("<Enter>", lambda event, label=label: self.highlight(event, label))
-            label.bind("<Leave>", lambda event, label=label: self.unhighlight(event, label))
+            label = tk.Label(self.playlist_canvas, text=f"Playlist {i}", font=self.controller.normal_font, cursor="hand2", fg=self.controller.off_white_colour, bg=self.controller.playlist_bg_colour) # binding the widget to the canvas improves performance
+            label.bind("<Enter>", lambda event, widget=label: self.highlight(event, widget))
+            label.bind("<Leave>", lambda event, widget=label: self.unhighlight(event, widget))
             label.bind("<Button-1>", lambda event: print("yo"))
-            self.playlist_canvas.create_window(25, i*25+25, window=label)
+            self.playlist_canvas.create_window(self.controller.default_width//10-9, i*25+35, window=label) # -9 for the scrollbar
+
+        create = tk.Label(self, text="Create Playlist", cursor="hand2", font=self.controller.normal_font, bg=self.controller.playlist_bg_colour, fg=self.controller.off_white_colour, relief="sunken")
+        create.bind("<Enter>", lambda event, widget=create: self.highlight(event, widget))
+        create.bind("<Leave>", lambda event, widget=create: self.unhighlight(event, widget))
         
+        create.place(x=0, y=((self.controller.default_height//12)*11), width=(self.controller.default_width//5)+17, height=self.controller.default_height-((self.controller.default_height//12)*11)) # have to re-calculate because of rounding which causes gaps
+    
         # set scrollbar to default position at the top
+        self.playlist_canvas.configure(scrollregion=self.playlist_canvas.bbox('all'))
         self.playlist_canvas.update_idletasks()
         self.playlist_canvas.yview_moveto(0)
+        
 
 
 
@@ -85,17 +92,17 @@ class MainPage(tk.Frame):
 
         # main canvas
         self.main_canvas = tk.Canvas(self, width=self.controller.default_width-(self.controller.default_width//5)-36, height=self.controller.default_height, bg=self.controller.bg_colour, highlightthickness=0, borderwidth=0) # take away 36 for the scrollbars
-        self.main_canvas.place(x=18+self.controller.default_width//5, y=0) # pushed 18px to the right for scrollbar
+        self.main_canvas.place(x=17+self.controller.default_width//5, y=0) # pushed 17 to the right for scrollbar
 
         # main area
         self.main_area = tk.Frame(self.main_canvas)
         self.main_area.bind('<Configure>', self.resize_main_canvas_scroll) # resize the canvas scrollregion each time the size of the frame changes
         
-        self.main_canvas.create_window(18+self.controller.default_width//5, 0, window=self.main_area) # display frame inside the canvas
+        self.main_canvas.create_window(17+self.controller.default_width//5, 0, window=self.main_area) # display frame inside the canvas
         
         # scrollbars
         self.main_scrollbar = ttk.Scrollbar(self, command=self.main_canvas.yview, orient="vertical", style="custom2.Vertical.TScrollbar")
-        self.main_scrollbar.place(x=self.controller.default_width-18, y=0, relheight=1) # set the scrollbar to the right of the screen
+        self.main_scrollbar.place(x=self.controller.default_width-17, y=0, relheight=1) # set the scrollbar to the right of the screen
         self.main_canvas.configure(yscrollcommand=self.main_scrollbar.set)
 
         # search mode
@@ -114,6 +121,7 @@ class MainPage(tk.Frame):
         self.main_canvas.create_window(self.calc_centre(self.main_canvas), 150, window=self.search_button)
         
         # set scrollbar to default position at the top
+        self.main_canvas.configure(scrollregion=self.main_canvas.bbox('all'))
         self.main_canvas.update_idletasks()
         self.main_canvas.yview_moveto(0)
 
@@ -134,12 +142,18 @@ class MainPage(tk.Frame):
 
             i = 0
             for result in self.search_results: # draw new widgets
-                song = tk.Label(self.main_canvas, text=self.remove_emoji(result), font=self.controller.normal_font, fg="white", bg=self.controller.bg_colour)
+                song = tk.Label(self.main_canvas, text=self.remove_emoji(result), font=self.controller.song_font, fg="white", bg=self.controller.bg_colour)
+                song.bind("<Button-1>", lambda event, song=song: self.test(event, song))
+
                 self.search_result_widgets.append(song)
                 self.main_canvas.create_window(self.calc_centre(self.main_canvas), 200+(i*50), window=song)
                 i+=1
 
             self.resize_main_canvas_scroll(None) # pass event as None, update the canvas scrolling function
+
+    def test(self, event, button):
+        button.update()
+        print(button.winfo_width())
 
     def remove_emoji(self, string):
         return string.encode('ascii', 'ignore').decode('ascii')
@@ -158,9 +172,9 @@ class MainPage(tk.Frame):
         self.main_canvas.configure(scrollregion=self.main_canvas.bbox('all'))
 
     # functions for highlighting animation
-    def highlight(self, event, label):
-        self.current_hovered_widget = label["fg"]
-        label.configure(fg="white")
+    def highlight(self, event, widget):
+        self.current_hovered_widget = widget["fg"]
+        widget.configure(fg="white")
 
-    def unhighlight(self, event, label):
-        label.configure(fg=self.current_hovered_widget)
+    def unhighlight(self, event, widget):
+        widget.configure(fg=self.current_hovered_widget)
