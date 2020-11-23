@@ -59,7 +59,7 @@ class MainPage(tk.Frame):
         self.playlist_canvas.create_window(0, 0, window=self.playlist_area) # display frame inside the canvas
         
         # scrollbars
-        self.playlist_scrollbar = ttk.Scrollbar(self, command=self.playlist_canvas.yview, orient="vertical", style="custom.Vertical.TScrollbar")
+        self.playlist_scrollbar = ttk.Scrollbar(self, command=self.playlist_canvas_yview, orient="vertical", style="custom.Vertical.TScrollbar")
         self.playlist_scrollbar.place(x=0, y=0, height=(self.controller.default_height//12)*11) # set the scrollbar to the left of the screen
         self.playlist_canvas.configure(yscrollcommand=self.playlist_scrollbar.set) 
         
@@ -67,14 +67,14 @@ class MainPage(tk.Frame):
         playlist_title = tk.Label(self.playlist_canvas, text="PLAYLISTS", font=self.controller.normal_font, fg="white", bg=self.controller.playlist_bg_colour)
         self.playlist_canvas.create_window(self.controller.default_width//10-9, 10, window=playlist_title) # -9 for the scrollbar
         
-        for i in range(100):
-            label = tk.Label(self.playlist_canvas, text=f"Playlist {i}", font=self.controller.normal_font, cursor="hand2", fg=self.controller.off_white_colour, bg=self.controller.playlist_bg_colour) # binding the widget to the canvas improves performance
+        for i in range(50):
+            label = tk.Label(self.playlist_canvas, text=f"Playlist {i}", font=self.controller.normal_font, cursor="hand2", fg=self.controller.dark_white_colour, bg=self.controller.playlist_bg_colour) # binding the widget to the canvas improves performance
             label.bind("<Enter>", lambda event, widget=label: self.highlight(event, widget))
             label.bind("<Leave>", lambda event, widget=label: self.unhighlight(event, widget))
-            label.bind("<Button-1>", lambda event: print("yo"))
+            label.bind("<Button-1>", lambda event, playlist_title=label["text"]: self.display_playlist(event, playlist_title))
             self.playlist_canvas.create_window(self.controller.default_width//10-9, i*25+35, window=label) # -9 for the scrollbar
-
-        create = tk.Label(self, text="Create Playlist", cursor="hand2", font=self.controller.normal_font, bg=self.controller.playlist_bg_colour, fg=self.controller.off_white_colour, relief="sunken")
+        
+        create = tk.Label(self, text="Create Playlist", cursor="hand2", font=self.controller.normal_font, bg=self.controller.playlist_bg_colour, fg=self.controller.dark_white_colour, relief="sunken")
         create.bind("<Enter>", lambda event, widget=create: self.highlight(event, widget))
         create.bind("<Leave>", lambda event, widget=create: self.unhighlight(event, widget))
         
@@ -87,12 +87,9 @@ class MainPage(tk.Frame):
         
 
 
-
-        
-
         # main canvas
-        self.main_canvas = tk.Canvas(self, width=self.controller.default_width-(self.controller.default_width//5)-34, height=self.controller.default_height, bg=self.controller.bg_colour, highlightthickness=0, borderwidth=0) # take away 34 for the scrollbars
-        self.main_canvas.place(x=17+self.controller.default_width//5, y=0) # pushed 17 to the right for scrollbar
+        self.main_canvas = tk.Canvas(self, width=self.controller.default_width-(self.controller.default_width//5)-34, height=(self.controller.default_height//12)*11, bg=self.controller.bg_colour, highlightthickness=0, borderwidth=0) # take away 34 for the scrollbars
+        self.main_canvas.place(x=17+self.controller.default_width//5, y=-1) # pushed 17 to the right for scrollbar, -1 gets rid of white dot
 
         # main area
         self.main_area = tk.Frame(self.main_canvas)
@@ -101,8 +98,8 @@ class MainPage(tk.Frame):
         self.main_canvas.create_window(17+self.controller.default_width//5, 0, window=self.main_area) # display frame inside the canvas
         
         # scrollbars
-        self.main_scrollbar = ttk.Scrollbar(self, command=self.main_canvas.yview, orient="vertical", style="custom2.Vertical.TScrollbar")
-        self.main_scrollbar.place(x=self.controller.default_width-17, y=0, relheight=1) # set the scrollbar to the right of the screen
+        self.main_scrollbar = ttk.Scrollbar(self, command=self.main_canvas_yview, orient="vertical", style="custom2.Vertical.TScrollbar")
+        self.main_scrollbar.place(x=self.controller.default_width-17, y=0, height=(self.controller.default_height//12)*11) # set the scrollbar to the right of the screen
         self.main_canvas.configure(yscrollcommand=self.main_scrollbar.set)
 
         # search mode
@@ -124,6 +121,22 @@ class MainPage(tk.Frame):
         self.main_canvas.configure(scrollregion=self.main_canvas.bbox('all'))
         self.main_canvas.update_idletasks()
         self.main_canvas.yview_moveto(0)
+
+        # task bar
+        # canvas (to make display easier)
+        self.taskbar_canvas = tk.Canvas(self, width=(self.controller.default_width//5)*4, height=self.controller.default_height//11, bg=self.controller.taskbar_bg_colour, highlightthickness=0, borderwidth=0)
+        self.taskbar_canvas.place(x=17+self.controller.default_width//5, y=(self.controller.default_height//12)*11) # pushed 17 to the right for scrollbar, -1 gets rid of white dot
+
+    def display_playlist(self, event, playlist_name): # display the playlist
+        self.main_canvas.delete("all")
+
+        title = tk.Label(self.main_canvas, text=playlist_name, fg="white", bg=self.controller.bg_colour, font=self.controller.header_font)
+        self.main_canvas.create_window(self.calc_centre(self.main_canvas), 40, window=title)
+
+
+    
+
+
 
     def song_search(self, title):
         if title.strip(" ") != "" and title.strip(" ") != "Search":
@@ -178,3 +191,11 @@ class MainPage(tk.Frame):
 
     def unhighlight(self, event, widget):
         widget.configure(fg=self.current_hovered_widget)
+
+    def main_canvas_yview(self, *args):
+        if self.main_canvas.yview() != (0.0, 1.0):
+            self.main_canvas.yview(*args)
+
+    def playlist_canvas_yview(self, *args):
+        if self.playlist_canvas.yview() != (0.0, 1.0):
+            self.playlist_canvas.yview(*args)
