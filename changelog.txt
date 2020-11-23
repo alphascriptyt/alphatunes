@@ -1,1 +1,5 @@
 23/11/2020 - 18:53 - FIXED - Canvas scrolling above window.
+23/11/2020 - 17:30 - ADDED - Playlist class for loading, storing, creating, editing.
+23/11/2020 - 20:00 - ADDED - Playlist display refresh function.
+23/11/2020 - 20:36 - FIXED - Playlist loading function.
+23/11/2020 - 20:45 - FIXED - Playlist update resize function to update scrollbar.

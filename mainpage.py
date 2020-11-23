@@ -7,8 +7,6 @@ import player
 import threading
 import queue
 
-#search = player.search()
-
 class MainPage(tk.Frame):
     def __init__(self, parent, controller):
         #intialise
@@ -20,6 +18,10 @@ class MainPage(tk.Frame):
         self.current_hovered_widget = "" # store the previous colour of the element being hovered over
         self.search_results = [] # store the search results (to be displayed)
         self.search_result_widgets = [] # so that the search results can be updated
+
+        # playlist information
+        self.displayed_playlists = []
+        self.loaded_playlist = None
 
         #styling
         self.style = ttk.Style()
@@ -128,15 +130,54 @@ class MainPage(tk.Frame):
         self.taskbar_canvas.place(x=17+self.controller.default_width//5, y=(self.controller.default_height//12)*11) # pushed 17 to the right for scrollbar, -1 gets rid of white dot
 
     def display_playlist(self, event, playlist_name): # display the playlist
-        self.main_canvas.delete("all")
+        # load data
+        self.loaded_playlist = player.Playlist()
+        feedback = self.loaded_playlist.load(playlist_name)
 
-        title = tk.Label(self.main_canvas, text=playlist_name, fg="white", bg=self.controller.bg_colour, font=self.controller.header_font)
-        self.main_canvas.create_window(self.calc_centre(self.main_canvas), 40, window=title)
+        if feedback is None:
+            print("playlist could not be found") # USE A MESSAGE BOX TO DISPLAY ERROR THEN UPDATE SCROLLBAR
+            self.update_playlist_display()
+            return
 
+        elif not feedback: # invalid format
+            print("invalid playlist format")
+            pass
 
-    
+        self.main_canvas.delete("all") # clear main canvas
+        
+        # title
+        playlist_title = tk.Label(self.main_canvas, text=playlist_name, fg="white", bg=self.controller.bg_colour, font=self.controller.header_font) # used for receiving the name of the playlist for writing
+        self.main_canvas.create_window(self.calc_centre(self.main_canvas), 40, window=playlist_title)
 
+        # description display
+        playlist_description = tk.Label(self.main_canvas, text=self.loaded_playlist.description, bg=self.controller.bg_colour, fg=self.controller.dark_white_colour, font=self.controller.normal_font)
+        self.main_canvas.create_window(self.calc_centre(self.main_canvas), 100, window=playlist_description)
 
+    def update_playlist_display(self): # if a playlist is corrupt/deleted its going to have to refresh the display
+        self.playlist_canvas.delete("all") # clear playlist canvas
+        playlist_title = tk.Label(self.playlist_canvas, text="PLAYLISTS", font=self.controller.normal_font, fg="white", bg=self.controller.playlist_bg_colour)
+        self.playlist_canvas.create_window(self.controller.default_width//10-9, 10, window=playlist_title) # -9 for the scrollbar
+        
+        playlists = os.listdir("userdata/playlists/") # find all the playlist files
+
+        for i in range(len(playlists)):
+            playlist = playlists[i]
+            if not playlist.endswith(".txt"):
+                continue
+
+            name = playlist[:-4] # remove .txt
+            self.displayed_playlists.append(name)
+
+            display = tk.Label(self.playlist_canvas, text=name, font=self.controller.normal_font, cursor="hand2", fg=self.controller.dark_white_colour, bg=self.controller.playlist_bg_colour) # binding the widget to the canvas improves performance
+            display.bind("<Enter>", lambda event, widget=display: self.highlight(event, widget))
+            display.bind("<Leave>", lambda event, widget=display: self.unhighlight(event, widget))
+            display.bind("<Button-1>", lambda event, playlist_title=name: self.display_playlist(event, playlist_title))
+            self.playlist_canvas.create_window(self.controller.default_width//10-9, i*25+35, window=display) # -9 for the scrollbar
+
+        self.resize_playlist_canvas_scroll(None) # resize the scrollbar for the updated playlists
+        
+    def create_playlist(self):
+        pass
 
     def song_search(self, title):
         if title.strip(" ") != "" and title.strip(" ") != "Search":
@@ -199,3 +240,7 @@ class MainPage(tk.Frame):
     def playlist_canvas_yview(self, *args):
         if self.playlist_canvas.yview() != (0.0, 1.0):
             self.playlist_canvas.yview(*args)
+
+    
+        
+
