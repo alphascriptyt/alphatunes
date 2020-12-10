@@ -134,7 +134,7 @@ class MainPage(tk.Frame):
         self.loaded_playlist = player.Playlist()
         feedback = self.loaded_playlist.load(playlist_name)
 
-        if feedback is None:
+        if feedback is None: # playlist could not be found
             print("playlist could not be found") # USE A MESSAGE BOX TO DISPLAY ERROR THEN UPDATE SCROLLBAR
             self.update_playlist_display()
             return
@@ -149,9 +149,15 @@ class MainPage(tk.Frame):
         playlist_title = tk.Label(self.main_canvas, text=playlist_name, fg="white", bg=self.controller.bg_colour, font=self.controller.header_font) # used for receiving the name of the playlist for writing
         self.main_canvas.create_window(self.calc_centre(self.main_canvas), 40, window=playlist_title)
 
-        # description display
+        # display description
         playlist_description = tk.Label(self.main_canvas, text=self.loaded_playlist.description, bg=self.controller.bg_colour, fg=self.controller.dark_white_colour, font=self.controller.normal_font)
         self.main_canvas.create_window(self.calc_centre(self.main_canvas), 100, window=playlist_description)
+
+        # display songs
+        for i in range(len(self.loaded_playlist.songs)):
+            song = self.loaded_playlist.songs[i]
+            song_label = tk.Label(self.main_canvas, text=song, bg=self.controller.bg_colour, fg=self.controller.dark_white_colour, font=self.controller.normal_font)
+            self.main_canvas.create_window(self.calc_centre(self.main_canvas), 150+i*40, window=song_label)
 
     def update_playlist_display(self): # if a playlist is corrupt/deleted its going to have to refresh the display
         self.playlist_canvas.delete("all") # clear playlist canvas

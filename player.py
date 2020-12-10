@@ -53,8 +53,7 @@ class Playlist:
 
             self.name = playlist_name
             self.description = data[0].strip("\n")
-            for song in data[1:]:
-                self.songs.append(song.strip("\n"))
+            self.songs = [song.strip("\n") for song in data[1:]]
 
         return True
 

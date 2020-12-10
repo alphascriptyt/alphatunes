@@ -13,12 +13,17 @@ class GUI(tk.Tk):
         # colours
         self.bg_colour = "#202020"
         self.playlist_bg_colour = "#151515"
+        self.taskbar_bg_colour = "#333333"
         self.sb_bar_colour = "#505050"
         self.sb_selected_colour = "#656565"
+        self.dark_white_colour = "#8a8a8a"
 
-        # standard font
+        # fonts
         self.header_font = "Arial 32 bold"
         self.normal_font = "Arial 15" # font for playlist names and songs
+        self.song_font = "Arial 12 bold"
+
+        # images
 
         # basic setup
         self.default_width = 1000 # calculate this?
@@ -29,6 +34,8 @@ class GUI(tk.Tk):
         self.resizable(0, 0)
         self.minsize(self.default_width, self.default_height)
 
+        # view mode (current frame)
+
         # frames, make resizable
         container = tk.Frame(self)
         container.place(x=0, y=0, width=self.default_width, height=self.default_height)
@@ -38,7 +45,7 @@ class GUI(tk.Tk):
         self.frames["MAIN"].tkraise()
 
     def initialise_frame(self, frame_object, image=None): # for all the basic setup stuff in frames
-        frame_object.place(x=0, y=0, width=1000, height=750)
+        frame_object.place(x=0, y=0, width=self.default_width, height=self.default_height)
         frame_object.configure(bg=self.bg_colour)
 
         if image != None: # for making it easier to initialise a frame with a background
@@ -50,7 +57,7 @@ class GUI(tk.Tk):
     def resource_path(self, relative_path): # copied from stackoverflow, for making the program a .exe in future
         """ Get absolute path to resource, works for dev and for PyInstaller """
         try:
-            base_path = sys._MEIPASS # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS # PyInstaller creates a temp folder and stores path in _MEIPASS, ignore error
             
         except Exception:
             base_path = os.path.abspath(".")
