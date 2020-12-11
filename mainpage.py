@@ -154,8 +154,9 @@ class MainPage(tk.Frame):
         self.main_canvas.create_window(self.calc_centre(self.main_canvas), 100, window=playlist_description)
 
         # display songs
-        for i in range(len(self.loaded_playlist.songs)):
-            song = self.loaded_playlist.songs[i]
+        i = 0
+        for song in self.loaded_playlist.songs:
+            url, thumbnail_url = self.loaded_playlist.songs[song]
             song_label = tk.Label(self.main_canvas, text=song, bg=self.controller.bg_colour, fg=self.controller.dark_white_colour, font=self.controller.normal_font)
             self.main_canvas.create_window(self.calc_centre(self.main_canvas), 150+i*40, window=song_label)
 
