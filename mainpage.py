@@ -183,6 +183,10 @@ class MainPage(tk.Frame):
         self.resize_playlist_canvas_scroll(None) # resize the scrollbar for the updated playlists
         
     def create_playlist(self):
+        # basically created a new playlist and store it, make sure to add to the list and use the normal functions
+        # click on the title to change
+        # click on the description to change
+        # have a plus icon somewhere to add songs
         pass
 
     def song_search(self, title):

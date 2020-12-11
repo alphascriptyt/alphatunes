@@ -9,9 +9,9 @@ def search(title, amount=10): # search for results, works
     data = {}
 
     for entry in info["entries"]:
-        data[entry["title"]] = (entry["webpage_url"], entry["thumbnails"][0]["url"]) # store title and thumbnail for display, url for downloads
+        data[entry["title"]] = (entry["webpage_url"], entry["thumbnails"][0]["url"]) # store title and thumbnail for display, url for downloads, keep this format for storing the songs in playlist too
 
-    return data
+    return data 
 
 # wrapper for making background tasks
 class BackgroundTask(threading.Thread): 
@@ -28,35 +28,63 @@ class BackgroundTask(threading.Thread):
 
 # playlist class, each playlist is its own instance
 class Playlist:
-    def __init__(self):
-        self.name = ""
-        self.description = ""
-        self.songs = []
+    def __init__(self): # create function done in initialiser, basically use preset values
+        self.directory = "/userdata/playlists"
+
+        # playlist data
+        self.name = f"Playlist {}"
+        self.description = "..."
+        self.songs = {}
+
+    def validate_dirs(self):
+        if not os.path.isdir(self.directory): # create folders if not found, check each time playlist is stored
+            os.makedirs(self.directory)
+            return True # validated
+
+        return None # nothing done
 
     def store(self): # create or update a playlist
-        with open(os.path.join("userdata/playlists/", self.name, ".txt"), "w") as playlist:
+        validate_dirs()
+        with open(os.path.join(self.directory, self.name, ".txt"), "w") as playlist:
             playlist.write(self.name + "\n")
             playlist.write(self.description + "\n")
+            
             for song in self.songs:
-                playlist.write(song + "\n")
+                title = song
+                url, thumbnail_url = self.songs[title]
+                playlist.write(title + "\\" + url + "\\" + thumbnail_url + "\n")
+
+            return True
 
     def load(self, playlist_name): # load a stored playlist
-        files = os.listdir("userdata/playlists/")
+        if validate_dirs():
+            return None # had to create file, there are no stored playlists
+        
+        files = os.listdir(self.directory)
         filename = playlist_name + ".txt"
-        if filename not in files:
+        if filename not in files: # couldn't find file
             return None
 
-        with open(os.path.join("userdata/playlists/", filename), "r") as playlist:
+        with open(os.path.join(self.directory, filename), "r") as playlist:
             data = playlist.readlines()
-            if len(data) < 2: # the file must have a description and title, default at least, otherwise there is an invalid format
+            if len(data) < 2: # the file must have a description and title, default at least, otherwise it is of an invalid format
                 return False
 
             self.name = playlist_name
             self.description = data[0].strip("\n")
-            self.songs = [song.strip("\n") for song in data[1:]]
+
+            for song in data[1:]:
+                try:
+                    parts = song.strip("\n").split("\\")
+                    title = parts[0]
+                    data = (parts[1], parts[2]) # make this metadata, include author, publish date?
+                    self.songs[title] = data
+
+                except IndexError: # invalid data format
+                    return False
 
         return True
-
+    
     def delete(self): # delete a playlist
-        os.remove("userdata/playlists/", self.name + ".txt")
+        os.remove(self.directory, self.name + ".txt")
         del self

@@ -3,3 +3,5 @@
 23/11/2020 - 20:00 - ADDED - Playlist display refresh function.
 23/11/2020 - 20:36 - FIXED - Playlist loading function.
 23/11/2020 - 20:45 - FIXED - Playlist update resize function to update scrollbar.
+11/12/2020 - 12:53 - CHANGED - Storing songs now involves the url of the page and the thumbnail url.
+11/12/2020 - 13:13 - ADDED - Method to check and create playlist directory if not found (automatically creates userdata if not found).
